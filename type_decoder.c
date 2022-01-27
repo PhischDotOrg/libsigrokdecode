@@ -987,7 +987,7 @@ static PyObject *Decoder_wait(PyObject *self, PyObject *args)
 	unsigned int i;
 	gboolean found_match;
 	struct srd_decoder_inst *di;
-	PyObject *py_pinvalues, *py_matched, *py_samplenum;
+	PyObject *py_pinvalues, *py_matched, *py_samplenum, *py_startsample, *py_endsample;
 	PyGILState_STATE gstate;
 
 	if (!self || !args)
@@ -1050,6 +1050,14 @@ static PyObject *Decoder_wait(PyObject *self, PyObject *args)
 		(void)process_samples_until_condition_match(di, &found_match);
 
 		Py_END_ALLOW_THREADS
+
+		py_startsample = PyLong_FromUnsignedLongLong(di->abs_start_samplenum);
+		PyObject_SetAttrString(di->py_inst, "startsample", py_startsample);
+		Py_DECREF(py_startsample);
+
+		py_endsample = PyLong_FromUnsignedLongLong(di->abs_end_samplenum);
+		PyObject_SetAttrString(di->py_inst, "endsample", py_endsample);
+		Py_DECREF(py_endsample);
 
 		/* If there's a match, set self.samplenum etc. and return. */
 		if (found_match) {
